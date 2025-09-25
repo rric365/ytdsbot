@@ -1,0 +1,81 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PANEL",
+    "meta": {
+        "version": "PLCN_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-09-25T15:00:00+00:00",
+    "name": "Discord-MusicBot + Lavalink",
+    "author": "auto@egg",
+    "uuid": "e7d59f6a-1234-4f2a-8bcd-abcdef123456",
+    "description": "Автоматизированный Discord-MusicBot (SudhanPlayz) с локальным Lavalink. Пользователю нужно только ввести токен и ID.",
+    "tags": [],
+    "features": [
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Node16-Java17": "ghcr.io/pterodactyl/yolks:nodejs_16-openjdk_17"
+    },
+    "file_denylist": [],
+    "startup": "bash /home/container/start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\"done\":\"Started Launcher\"}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\n\n# Установка зависимостей\napk add --no-cache git curl nodejs npm openjdk17\n\ncd /mnt/server\n\n# Клонируем бота\nrm -rf Discord-MusicBot\ngit clone https://github.com/SudhanPlayz/Discord-MusicBot.git\ncd Discord-MusicBot\nnpm install\n\n# Скачиваем Lavalink\ncd /mnt/server\nmkdir lavalink\ncd lavalink\ncurl -L https://github.com/freyacodes/Lavalink/releases/latest/download/Lavalink.jar -o Lavalink.jar\n\n# Создаём application.yml с переменными окружения\ncat > application.yml <<EOL\nserver:\n  port: ${SERVER_PORT}\nlavalink:\n  server:\n    password: \"${LAVALINK_PASSWORD}\"\nspring:\n  main:\n    banner-mode: \"off\"\nEOL\n\n# Стартовый скрипт\ncd /mnt/server\ncat > start.sh <<'EOF'\n#!/bin/bash\ncd /mnt/server/lavalink\njava -jar Lavalink.jar &\ncd /mnt/server/Discord-MusicBot\nnpm run deploy || true\nnode index.js\nEOF\nchmod +x start.sh",
+            "container": "ghcr.io/pterodactyl/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "BOT_TOKEN",
+            "description": "Discord Bot Token",
+            "env_variable": "BOT_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "required": true
+        },
+        {
+            "name": "CLIENT_ID",
+            "description": "Discord Application Client ID",
+            "env_variable": "CLIENT_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "required": true
+        },
+        {
+            "name": "CLIENT_SECRET",
+            "description": "Discord Application Client Secret",
+            "env_variable": "CLIENT_SECRET",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "required": true
+        },
+        {
+            "name": "ADMIN_ID",
+            "description": "Ваш Discord ID (для админки бота)",
+            "env_variable": "ADMIN_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "required": true
+        },
+        {
+            "name": "LAVALINK_PASSWORD",
+            "description": "Пароль для Lavalink (можно оставить changeme)",
+            "env_variable": "LAVALINK_PASSWORD",
+            "default_value": "changeme",
+            "user_viewable": true,
+            "user_editable": true,
+            "required": true
+        }
+    ]
+}
